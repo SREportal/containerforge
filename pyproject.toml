@@ -1,0 +1,91 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "containerforge"
+version = "2.1.0"
+description = "Containerize anything. Ship everywhere. OCI-compliant, multi-language, batteries included."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [{ name = "ContainerForge Contributors" }]
+keywords = ["docker", "kubernetes", "containerization", "oci", "devops", "cicd", "cloud-native"]
+requires-python = ">=3.9"
+
+dependencies = [
+    "click>=8.1",
+    "rich>=13.0",
+    "pyyaml>=6.0",
+]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: System :: Software Distribution",
+    "Topic :: Utilities",
+    "Operating System :: OS Independent",
+]
+
+[project.optional-dependencies]
+docker = ["docker>=7.0"]
+ai     = ["anthropic>=0.25"]
+all    = ["docker>=7.0", "anthropic>=0.25"]
+dev    = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "ruff>=0.4",
+    "build>=1.0",
+    "twine>=5.0",
+]
+
+[project.urls]
+Homepage      = "https://github.com/containerforge/containerforge"
+Documentation = "https://containerforge.dev"
+"Bug Tracker" = "https://github.com/containerforge/containerforge/issues"
+Changelog     = "https://github.com/containerforge/containerforge/blob/main/CHANGELOG.md"
+
+[project.scripts]
+containerforge = "containerforge.cli:cli"
+forge          = "containerforge.cli:cli"
+
+# ── Setuptools package discovery ──────────────────────────────────────────────
+[tool.setuptools.packages.find]
+where   = ["."]
+include = ["containerforge*"]
+exclude = ["tests*", "examples*"]
+
+# ── Pytest ────────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths    = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+# ── Ruff linter ───────────────────────────────────────────────────────────────
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+exclude = ["examples/", ".github/"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]  # line too long — handled by formatter
+
+# ── Coverage ──────────────────────────────────────────────────────────────────
+[tool.coverage.run]
+source = ["containerforge"]
+omit   = ["tests/*", "examples/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
