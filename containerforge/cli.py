@@ -9,7 +9,7 @@
 
 ContainerForge — Containerize anything. Ship everywhere.
 
-Version   : 2.1.0
+Version   : 2.1.1
 License   : Apache 2.0
 Docs      : https://containerforge.dev
 Source    : https://github.com/containerforge/containerforge
@@ -44,21 +44,21 @@ from rich.text import Text
 from rich import box
 
 
-from analyzer.source_detector  import SourceDetector, FRAMEWORK_PATTERNS, DEFAULT_PORTS
-from analyzer.app_analyzer      import AppAnalyzer
-from analyzer.detection_report  import print_detection_report
-from config_loader              import load_config, generate_example_config, ForgeConfig
+from containerforge.analyzer.source_detector  import SourceDetector, FRAMEWORK_PATTERNS, DEFAULT_PORTS
+from containerforge.analyzer.app_analyzer      import AppAnalyzer
+from containerforge.analyzer.detection_report  import print_detection_report
+from containerforge.config_loader              import load_config, generate_example_config, ForgeConfig
 from containerforge.generator.oci_dockerfile_gen import OCIDockerfileGenerator
-from generator.compose_gen      import ComposeGenerator
-from generator.sidecar_gen      import SidecarGenerator
-from generator.db_wirer         import detect_databases, DB_SERVICES
-from injector.health_injector   import HealthInjector
-from scanner.vuln_scanner       import VulnScanner
-from cicd.pipeline_gen          import CICDGenerator
-from k8s.k8s_gen                import K8sGenerator
-from grafana.dashboard_gen      import GrafanaGenerator
-from cloud.llm_analyzer         import LLMAnalyzer
-from cloud.cloud_deployer       import CloudDeployer, PROVIDERS
+from containerforge.generator.compose_gen      import ComposeGenerator
+from containerforge.generator.sidecar_gen      import SidecarGenerator
+from containerforge.generator.db_wirer         import detect_databases, DB_SERVICES
+from containerforge.injector.health_injector   import HealthInjector
+from containerforge.scanner.vuln_scanner       import VulnScanner
+from containerforge.cicd.pipeline_gen          import CICDGenerator
+from containerforge.k8s.k8s_gen                import K8sGenerator
+from containerforge.grafana.dashboard_gen      import GrafanaGenerator
+from containerforge.cloud.llm_analyzer         import LLMAnalyzer
+from containerforge.cloud.cloud_deployer       import CloudDeployer, PROVIDERS
 
 console = Console()
 
@@ -70,7 +70,7 @@ BANNER = """[bold cyan]
  ╚██████╗╚██████╔╝██║ ╚███║   ██║   ██║  ██║██║██║ ╚███║███████╗██║  ██║╚██████╔╝███████╗
   ╚═════╝ ╚═════╝ ╚═╝  ╚══╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚══╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝
 [/bold cyan]
-[dim]  v2.1.0  ·  Containerize anything. Ship everywhere.  ·  apache-2.0[/dim]
+[dim]  v2.1.1  ·  Containerize anything. Ship everywhere.  ·  apache-2.0[/dim]
 [dim]  https://github.com/containerforge/containerforge[/dim]
 """
 
@@ -80,7 +80,7 @@ SUPPORTED_LANGS = ["python","nodejs","go","java","ruby","rust","php","dotnet","a
 # ─── CLI group ────────────────────────────────────────────────────────────────
 
 @click.group()
-@click.version_option("2.1.0", prog_name="containerforge")
+@click.version_option("2.1.1", prog_name="containerforge")
 def cli():
     """ContainerForge — Containerize anything. Ship everywhere.\n\nRun `containerforge COMMAND --help` for detailed usage."""
     pass

@@ -5,6 +5,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [2.1.1] — 2026-02-27
+
+### Fixed
+- `cli.py`: Fixed all 14 internal imports to use fully-qualified `containerforge.*` paths — CLI was crashing with `ModuleNotFoundError` on every installed invocation
+- `analyzer/detection_report.py`: Added missing `from rich.console import Console` import
+- `analyzer/source_detector.py`: `_detect_env_vars` now also parses `.env`, `.env.example`, `.env.sample`, and `.env.local` files so that database detection from env var keys (e.g. `DATABASE_URL`) works correctly
+
+---
+
 ## [2.1.0] — 2026-02-26
 
 ### Added

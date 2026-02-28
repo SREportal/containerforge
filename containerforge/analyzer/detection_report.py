@@ -4,6 +4,7 @@ Shows language, framework, confidence, OCI labels, detected ports, etc.
 """
 
 from pathlib import Path
+from rich.console import Console
 
 console = Console()
 

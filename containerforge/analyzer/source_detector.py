@@ -675,7 +675,7 @@ class SourceDetector:
         return any((self.app_path / f).exists() for f in [".env", ".env.example", ".env.sample"])
 
     def _detect_env_vars(self, entry_point: Optional[Path]) -> list[str]:
-        """Detect env var names referenced in code."""
+        """Detect env var names referenced in code and .env* files."""
         found = set()
         patterns = [
             r'os\.environ\.get\(["\'](\w+)["\']',
@@ -697,6 +697,19 @@ class SourceDetector:
                         found.add(m.group(1))
             except Exception:
                 pass
+        # Also extract variable names defined in .env* files
+        for env_name in [".env", ".env.example", ".env.sample", ".env.local"]:
+            env_file = self.app_path / env_name
+            if env_file.exists():
+                try:
+                    for line in self._read_file(env_file).splitlines():
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            key = line.split("=", 1)[0].strip()
+                            if key:
+                                found.add(key)
+                except Exception:
+                    pass
         return sorted(found)
 
     def _score_confidence(self, language: str, framework: str, entry_point, deps_info: dict) -> str:
