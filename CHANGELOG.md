@@ -5,6 +5,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [2.1.2] — 2026-03-01
+
+### Fixed
+- `injector/health_injector.py`: Fixed `KeyError: 'port'` crash when falling back to standalone health server mode. The `STANDALONE_HEALTH_SERVER` template string contained an unescaped `{port}` f-string placeholder that `str.format(health_port=...)` tried to substitute. Escaped as `{{port}}` so the generated script receives a correct `f"...:{port}"` line.
+- `pyproject.toml`: Migrated deprecated `license = { text = "..." }` table to SPDX string `license = "Apache-2.0"` and removed redundant license classifier, eliminating `SetuptoolsDeprecationWarning` on every build.
+
+### Changed
+- CI: Pinned `ruff==0.15.4` and added `--no-cache` flag to lint job to prevent stale pip-cached ruff versions from producing false positives.
+- Build backend changed from `setuptools.backends.legacy:build` to standard `setuptools.build_meta` for full pip editable-install and PyPI build compatibility.
+
+---
+
 ## [2.1.1] — 2026-02-27
 
 ### Fixed

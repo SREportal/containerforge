@@ -65,7 +65,7 @@ BANNER = """[bold cyan]
  ╚██████╗╚██████╔╝██║ ╚███║   ██║   ██║  ██║██║██║ ╚███║███████╗██║  ██║╚██████╔╝███████╗
   ╚═════╝ ╚═════╝ ╚═╝  ╚══╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚══╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝
 [/bold cyan]
-[dim]  v2.1.1  ·  Containerize anything. Ship everywhere.  ·  apache-2.0[/dim]
+[dim]  v2.1.2  ·  Containerize anything. Ship everywhere.  ·  apache-2.0[/dim]
 [dim]  https://github.com/containerforge/containerforge[/dim]
 """
 
