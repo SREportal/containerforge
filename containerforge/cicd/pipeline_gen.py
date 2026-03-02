@@ -10,7 +10,6 @@ All pipelines:
 """
 
 from pathlib import Path
-from typing import Optional
 
 
 class CICDGenerator:
@@ -53,7 +52,6 @@ class CICDGenerator:
 
     def _github_actions(self) -> dict:
         name = self.cfg.name or self.app_path.name.lower().replace("_", "-")
-        port = self.d.get("port", 8080)
         lang = self.d.get("language", "python")
         runtime = self.d.get("runtime_version", "")
         registry = self.cfg.push_registry or "ghcr.io/${{ github.repository_owner }}"
@@ -194,15 +192,13 @@ jobs:
 {"        uses: azure/setup-kubectl@v3" if k8s else ""}
 {"      - name: Configure kubeconfig" if k8s else ""}
 {"        run: |" if k8s else ""}
-{f"          echo '${{{{ secrets.KUBECONFIG }}}}' | base64 -d > kubeconfig.yaml" if k8s else ""}
+{"          echo '${{ secrets.KUBECONFIG }}' | base64 -d > kubeconfig.yaml" if k8s else ""}
 {"          export KUBECONFIG=./kubeconfig.yaml" if k8s else ""}
 {f"      - name: Deploy to {self.cfg.k8s_namespace}" if k8s else ""}
 {"        run: |" if k8s else ""}
 {"          kubectl apply -f k8s/" if k8s else ""}
 {"          kubectl rollout status deployment/" + name + " -n " + self.cfg.k8s_namespace if k8s else ""}
 """
-        # Clean up empty lines from conditional blocks
-        lines = [l for l in content.splitlines() if not (l.strip() == "" and l.endswith(""))]
         return {".github/workflows/containerforge.yml": content}
 
     def _gh_setup_step(self, lang: str, runtime: str) -> str:
@@ -268,8 +264,6 @@ jobs:
         name = self.cfg.name or self.app_path.name.lower().replace("_", "-")
         lang = self.d.get("language", "python")
         runtime = self.d.get("runtime_version", "")
-        registry = "${CI_REGISTRY_IMAGE}"
-
         content = f"""\
 # ──────────────────────────────────────────────────────────────────────
 # ContainerForge - GitLab CI Pipeline
@@ -475,7 +469,7 @@ pipeline {{
 
         stage('Vulnerability Scan') {{
             steps {{
-                sh 'trivy image --exit-code 0 --severity CRITICAL,HIGH --format json --output trivy-report.json $IMAGE_TAG 2>/dev/null; trivy image --format cyclonedx --output sbom.json $IMAGE_TAG 2>/dev/null || echo "Trivy not installed"'  
+                sh 'trivy image --exit-code 0 --severity CRITICAL,HIGH --format json --output trivy-report.json $IMAGE_TAG 2>/dev/null; trivy image --format cyclonedx --output sbom.json $IMAGE_TAG 2>/dev/null || echo "Trivy not installed"'
             }}
             post {{
                 always {{
