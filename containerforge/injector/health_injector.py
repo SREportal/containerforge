@@ -210,7 +210,7 @@ class HealthHandler(BaseHTTPRequestHandler):
 def run():
     port = int(os.environ.get("HEALTH_PORT", {health_port}))
     server = HTTPServer(("0.0.0.0", port), HealthHandler)
-    print(f"ContainerForge health server on :{port}")
+    print(f"ContainerForge health server on :{{port}}")
     server.serve_forever()
 
 

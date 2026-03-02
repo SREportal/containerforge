@@ -7,7 +7,7 @@ name = "containerforge"
 version = "2.1.1"
 description = "Containerize anything. Ship everywhere. OCI-compliant, multi-language, batteries included."
 readme = "README.md"
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
 authors = [{ name = "ContainerForge Contributors" }]
 keywords = ["docker", "kubernetes", "containerization", "oci", "devops", "cicd", "cloud-native"]
 requires-python = ">=3.9"
@@ -23,7 +23,6 @@ classifiers = [
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Intended Audience :: System Administrators",
-    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
