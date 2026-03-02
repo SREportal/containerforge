@@ -5,7 +5,6 @@ for Python Flask/FastAPI applications.
 
 from pathlib import Path
 
-
 DOCKERFILE_TEMPLATE = """# ──────────────────────────────────────────────────────
 # ContainerForge - Auto-generated Dockerfile
 # Framework: {framework}  |  Port: {port}
@@ -63,7 +62,7 @@ CMD {cmd_json}
 """
 
 DOCKERFILE_NO_DEPS = """# ──────────────────────────────────────────────────────
-# ContainerForge - Auto-generated Dockerfile  
+# ContainerForge - Auto-generated Dockerfile
 # Framework: {framework}  |  Port: {port}
 # ──────────────────────────────────────────────────────
 

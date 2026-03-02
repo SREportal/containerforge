@@ -11,13 +11,12 @@ Features:
 """
 
 import json
-import subprocess
 import shutil
-from pathlib import Path
-from datetime import datetime
+import subprocess
 from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
 from typing import Optional
-
 
 TRIVY_NOT_FOUND_MSG = """
 [yellow]⚠  Trivy not found.[/yellow] Install it to enable vulnerability scanning:
@@ -97,7 +96,7 @@ class VulnScanner:
         ]
 
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+            subprocess.run(cmd, capture_output=True, text=True, timeout=300)
         except subprocess.TimeoutExpired:
             return ScanResult(image=image_tag, scanned_at=datetime.utcnow().isoformat(),
                               error="scan_timeout")
@@ -213,7 +212,8 @@ class VulnScanner:
         return any(result.by_severity.get(s, 0) > 0 for s in fail_on)
 
     def print_report(self, result: ScanResult, console, verbose: bool = False):
-        from rich.table import Table; from rich.panel import Panel; from rich import box; from rich.text import Text
+        from rich import box
+        from rich.table import Table
         """Print scan results to rich console."""
 
         if result.error == "trivy_not_found":

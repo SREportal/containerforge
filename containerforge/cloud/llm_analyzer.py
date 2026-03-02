@@ -9,7 +9,6 @@ import os
 from pathlib import Path
 from typing import Optional
 
-
 ANALYSIS_PROMPT = """You are an expert DevOps and cloud-native engineer reviewing a containerized application.
 
 Analyze the following application metadata and source code samples. Provide a thorough review covering:
@@ -149,7 +148,6 @@ class LLMAnalyzer:
         return "\n\n".join(samples)
 
     def _read_dockerfile(self) -> str:
-        from rich.table import Table; from rich.panel import Panel; from rich import box; from rich.text import Text
         df = self.app_path / "Dockerfile"
         if df.exists():
             try:
@@ -159,14 +157,15 @@ class LLMAnalyzer:
         return "# Dockerfile not found"
 
     def _save_report(self, result: dict):
-        from rich.table import Table; from rich.panel import Panel; from rich import box; from rich.text import Text
         out_dir = self.app_path / ".containerforge"
         out_dir.mkdir(exist_ok=True)
         report_path = out_dir / "llm-analysis.json"
         report_path.write_text(json.dumps(result, indent=2))
 
     def print_report(self, result: dict, console):
-        from rich.table import Table; from rich.panel import Panel; from rich import box; from rich.text import Text
+        from rich import box
+        from rich.panel import Panel
+        from rich.table import Table
 
         if result.get("error"):
             console.print(f"  [yellow]⚠  LLM analysis failed: {result['error']}[/yellow]")
@@ -210,10 +209,10 @@ class LLMAnalyzer:
 
         recs = result.get("recommendations", [])
         if recs:
-            console.print(f"\n  [bold]Top Recommendations:[/bold]")
+            console.print("\n  [bold]Top Recommendations:[/bold]")
             for r in recs[:3]:
                 impact_color = {"high": "red", "medium": "yellow", "low": "dim"}.get(r.get("impact", "low"), "white")
                 console.print(f"  [{impact_color}]#{r.get('rank')}[/{impact_color}] [bold]{r.get('title')}[/bold]")
                 console.print(f"      [dim]{r.get('description', '')[:120]}[/dim]")
 
-        console.print(f"  [dim]Full report: .containerforge/llm-analysis.json[/dim]")
+        console.print("  [dim]Full report: .containerforge/llm-analysis.json[/dim]")

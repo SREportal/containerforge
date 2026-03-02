@@ -4,9 +4,12 @@ optional database services (postgres, mysql, redis, mongodb, etc).
 """
 
 from pathlib import Path
+
 from containerforge.generator.db_wirer import (
-    detect_databases, render_db_services, render_db_volumes,
-    render_app_env_additions, render_depends_on, DB_SERVICES
+    render_app_env_additions,
+    render_db_services,
+    render_db_volumes,
+    render_depends_on,
 )
 
 

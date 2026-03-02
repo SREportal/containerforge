@@ -9,7 +9,7 @@
 
 ContainerForge — Containerize anything. Ship everywhere.
 
-Version   : 2.1.0
+Version   : 2.1.1
 License   : Apache 2.0
 Docs      : https://containerforge.dev
 Source    : https://github.com/containerforge/containerforge
@@ -28,49 +28,44 @@ Commands:
   list-supported Show all supported languages and frameworks
 """
 
-import sys
-import os
 import json as _json
-import subprocess
+import os
 import shutil
+import subprocess
+from pathlib import Path
 
 import click
-from pathlib import Path
+from rich import box
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich.columns import Columns
-from rich.text import Text
-from rich import box
 
-
-from analyzer.source_detector  import SourceDetector, FRAMEWORK_PATTERNS, DEFAULT_PORTS
-from analyzer.app_analyzer      import AppAnalyzer
-from analyzer.detection_report  import print_detection_report
-from config_loader              import load_config, generate_example_config, ForgeConfig
+from containerforge.analyzer.detection_report import print_detection_report
+from containerforge.analyzer.source_detector import FRAMEWORK_PATTERNS, SourceDetector
+from containerforge.cicd.pipeline_gen import CICDGenerator
+from containerforge.cloud.cloud_deployer import PROVIDERS, CloudDeployer
+from containerforge.cloud.llm_analyzer import LLMAnalyzer
+from containerforge.config_loader import ForgeConfig, generate_example_config, load_config
+from containerforge.generator.compose_gen import ComposeGenerator
+from containerforge.generator.db_wirer import DB_SERVICES, detect_databases
 from containerforge.generator.oci_dockerfile_gen import OCIDockerfileGenerator
-from generator.compose_gen      import ComposeGenerator
-from generator.sidecar_gen      import SidecarGenerator
-from generator.db_wirer         import detect_databases, DB_SERVICES
-from injector.health_injector   import HealthInjector
-from scanner.vuln_scanner       import VulnScanner
-from cicd.pipeline_gen          import CICDGenerator
-from k8s.k8s_gen                import K8sGenerator
-from grafana.dashboard_gen      import GrafanaGenerator
-from cloud.llm_analyzer         import LLMAnalyzer
-from cloud.cloud_deployer       import CloudDeployer, PROVIDERS
+from containerforge.generator.sidecar_gen import SidecarGenerator
+from containerforge.grafana.dashboard_gen import GrafanaGenerator
+from containerforge.injector.health_injector import HealthInjector
+from containerforge.k8s.k8s_gen import K8sGenerator
+from containerforge.scanner.vuln_scanner import VulnScanner
 
 console = Console()
 
 BANNER = """[bold cyan]
   ██████╗ ██████╗ ███╗  ██╗████████╗ █████╗ ██╗███╗  ██╗███████╗██████╗  ██████╗ ███████╗
  ██╔════╝██╔═══██╗████╗ ██║╚══██╔══╝██╔══██╗██║████╗ ██║██╔════╝██╔══██╗██╔════╝ ██╔════╝
- ██║     ██║   ██║██╔██╗██║   ██║   ███████║██║██╔██╗██║█████╗  ██████╔╝██║  ███╗█████╗  
- ██║     ██║   ██║██║╚████║   ██║   ██╔══██║██║██║╚████║██╔══╝  ██╔══██╗██║   ██║██╔══╝  
+ ██║     ██║   ██║██╔██╗██║   ██║   ███████║██║██╔██╗██║█████╗  ██████╔╝██║  ███╗█████╗
+ ██║     ██║   ██║██║╚████║   ██║   ██╔══██║██║██║╚████║██╔══╝  ██╔══██╗██║   ██║██╔══╝
  ╚██████╗╚██████╔╝██║ ╚███║   ██║   ██║  ██║██║██║ ╚███║███████╗██║  ██║╚██████╔╝███████╗
   ╚═════╝ ╚═════╝ ╚═╝  ╚══╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚══╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝
 [/bold cyan]
-[dim]  v2.1.0  ·  Containerize anything. Ship everywhere.  ·  apache-2.0[/dim]
+[dim]  v2.1.1  ·  Containerize anything. Ship everywhere.  ·  apache-2.0[/dim]
 [dim]  https://github.com/containerforge/containerforge[/dim]
 """
 
@@ -80,7 +75,7 @@ SUPPORTED_LANGS = ["python","nodejs","go","java","ruby","rust","php","dotnet","a
 # ─── CLI group ────────────────────────────────────────────────────────────────
 
 @click.group()
-@click.version_option("2.1.0", prog_name="containerforge")
+@click.version_option("2.1.1", prog_name="containerforge")
 def cli():
     """ContainerForge — Containerize anything. Ship everywhere.\n\nRun `containerforge COMMAND --help` for detailed usage."""
     pass
@@ -127,11 +122,16 @@ def build(app_path, name, port, tag, lang, framework, platform, no_inject, no_sc
 
     # ── Load config (containerforge.yml wins, CLI flags override) ─────────────
     cfg = load_config(app_path)
-    if name:      cfg.name = name
-    if tag:       cfg.tag = tag
-    if platform:  cfg.platform = platform
-    if push:      cfg.push_registry = push
-    if no_scan:   cfg.scan = False
+    if name:
+        cfg.name = name
+    if tag:
+        cfg.tag = tag
+    if platform:
+        cfg.platform = platform
+    if push:
+        cfg.push_registry = push
+    if no_scan:
+        cfg.scan = False
 
     if not cfg.name:
         cfg.name = app_path.name.lower().replace(" ", "-").replace("_", "-")
@@ -147,12 +147,18 @@ def build(app_path, name, port, tag, lang, framework, platform, no_inject, no_sc
     # ── 1. Detect ──────────────────────────────────────────────────────────────
     _step("1", "Detecting language & framework")
     detection = SourceDetector(app_path).detect()
-    if lang and lang != "auto": _override_lang(detection, lang)
-    if framework:               _override_fw(detection, framework)
-    if port:                    detection["port"] = port
-    if cfg.lang and cfg.lang != "auto" and not lang: _override_lang(detection, cfg.lang)
-    if cfg.framework and not framework:              _override_fw(detection, cfg.framework)
-    if cfg.port and not port:                        detection["port"] = cfg.port
+    if lang and lang != "auto":
+        _override_lang(detection, lang)
+    if framework:
+        _override_fw(detection, framework)
+    if port:
+        detection["port"] = port
+    if cfg.lang and cfg.lang != "auto" and not lang:
+        _override_lang(detection, cfg.lang)
+    if cfg.framework and not framework:
+        _override_fw(detection, cfg.framework)
+    if cfg.port and not port:
+        detection["port"] = cfg.port
     _print_detect_line(detection)
 
     # ── 2. Database detection ─────────────────────────────────────────────────
@@ -310,7 +316,7 @@ def init(app_path, force):
     app_path = Path(app_path).resolve()
     out = app_path / "containerforge.yml"
     if out.exists() and not force:
-        console.print(f"  [yellow]containerforge.yml already exists. Use --force to overwrite.[/yellow]")
+        console.print("  [yellow]containerforge.yml already exists. Use --force to overwrite.[/yellow]")
         return
     detection = SourceDetector(app_path).detect()
     content = generate_example_config(detection, app_path)
@@ -390,16 +396,21 @@ def k8s(app_path, image, namespace, replicas, ingress, ingress_host, hpa):
     """
     app_path = Path(app_path).resolve()
     cfg = load_config(app_path)
-    if namespace:    cfg.k8s_namespace = namespace
-    if replicas:     cfg.k8s_replicas = replicas
-    if ingress:      cfg.k8s_ingress = True
-    if ingress_host: cfg.k8s_ingress_host = ingress_host
-    if hpa:          cfg.k8s_hpa = True
+    if namespace:
+        cfg.k8s_namespace = namespace
+    if replicas:
+        cfg.k8s_replicas = replicas
+    if ingress:
+        cfg.k8s_ingress = True
+    if ingress_host:
+        cfg.k8s_ingress_host = ingress_host
+    if hpa:
+        cfg.k8s_hpa = True
 
     detection = SourceDetector(app_path).detect()
     img = image or f"{cfg.name or app_path.name.lower()}:{cfg.tag}"
 
-    console.print(f"\n[bold cyan]☸  Generating Kubernetes manifests[/bold cyan]")
+    console.print("\n[bold cyan]☸  Generating Kubernetes manifests[/bold cyan]")
     console.print(f"  Namespace: [bold]{cfg.k8s_namespace}[/bold]  ·  "
                   f"Replicas: [bold]{cfg.k8s_replicas}[/bold]  ·  "
                   f"Image: [bold]{img}[/bold]\n")
@@ -410,8 +421,8 @@ def k8s(app_path, image, namespace, replicas, ingress, ingress_host, hpa):
     for m in manifests:
         console.print(f"  ✅ [green]{m.name}[/green]")
 
-    console.print(f"\n  [dim]Apply:  kubectl apply -f k8s/[/dim]")
-    console.print(f"  [dim]Dry run: kubectl apply -f k8s/ --dry-run=client[/dim]")
+    console.print("\n  [dim]Apply:  kubectl apply -f k8s/[/dim]")
+    console.print("  [dim]Dry run: kubectl apply -f k8s/ --dry-run=client[/dim]")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -441,19 +452,19 @@ def cicd(app_path, provider):
     detection = SourceDetector(app_path).detect()
 
     gen = CICDGenerator(app_path, detection, cfg)
-    console.print(f"\n[bold cyan]🔄 Generating CI/CD pipelines[/bold cyan]\n")
+    console.print("\n[bold cyan]🔄 Generating CI/CD pipelines[/bold cyan]\n")
 
     if provider in ("github", "all"):
-        p = gen.generate_github_actions()
-        _ok(f".github/workflows/containerforge.yml")
+        gen.generate_github_actions()
+        _ok(".github/workflows/containerforge.yml")
     if provider in ("gitlab", "all"):
-        p = gen.generate_gitlab_ci()
-        _ok(f".gitlab-ci.yml")
+        gen.generate_gitlab_ci()
+        _ok(".gitlab-ci.yml")
     if provider in ("jenkins", "all"):
-        p = gen.generate_jenkins()
-        _ok(f"Jenkinsfile")
+        gen.generate_jenkins()
+        _ok("Jenkinsfile")
 
-    console.print(f"\n  [dim]All pipelines: test → build → scan → push → deploy[/dim]")
+    console.print("\n  [dim]All pipelines: test → build → scan → push → deploy[/dim]")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -484,8 +495,10 @@ def deploy(app_path, provider, region, image, gen_only, dry_run):
     """
     app_path = Path(app_path).resolve()
     cfg = load_config(app_path)
-    if provider: cfg.cloud_provider = provider
-    if region:   cfg.cloud_region = region
+    if provider:
+        cfg.cloud_provider = provider
+    if region:
+        cfg.cloud_region = region
     if not cfg.cloud_provider:
         console.print("  [red]No cloud provider specified. Use --provider aws|gcp|azure|fly or set in containerforge.yml[/red]")
         raise SystemExit(1)
@@ -505,11 +518,11 @@ def deploy(app_path, provider, region, image, gen_only, dry_run):
         _ok(f".containerforge/cloud/{fname}")
 
     if not gen_only:
-        console.print(f"\n  [cyan]Running deployment...[/cyan]")
+        console.print("\n  [cyan]Running deployment...[/cyan]")
         ok = deployer.deploy(dry_run=dry_run)
         _ok(f"Deployed to {cfg.cloud_provider}") if ok else _warn("Deploy failed — check logs")
     else:
-        console.print(f"\n  [dim]IaC generated. Run deploy without --gen-only to execute.[/dim]")
+        console.print("\n  [dim]IaC generated. Run deploy without --gen-only to execute.[/dim]")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -535,13 +548,13 @@ def dashboard(app_path):
     cfg = load_config(app_path)
     detection = SourceDetector(app_path).detect()
 
-    console.print(f"\n[bold cyan]📊 Generating Grafana dashboard[/bold cyan]\n")
-    out = GrafanaGenerator(app_path, cfg, detection).generate()
+    console.print("\n[bold cyan]📊 Generating Grafana dashboard[/bold cyan]\n")
+    GrafanaGenerator(app_path, cfg, detection).generate()
 
     _ok("grafana-dashboard.json   ← import into Grafana (Dashboards → Import)")
     _ok("grafana-provisioning.yml ← auto-provision via config")
     _ok("grafana-compose-snippet.yml ← add Prometheus+Grafana to docker-compose.yml")
-    console.print(f"\n  [dim]After adding to compose, open: http://localhost:3000  (admin/admin)[/dim]")
+    console.print("\n  [dim]After adding to compose, open: http://localhost:3000  (admin/admin)[/dim]")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -576,7 +589,7 @@ def analyze(app_path, api_key):
         console.print("  [dim]Set it: export ANTHROPIC_API_KEY=sk-ant-...[/dim]")
         raise SystemExit(1)
 
-    console.print(f"\n[bold cyan]🤖 Running AI analysis...[/bold cyan]\n")
+    console.print("\n[bold cyan]🤖 Running AI analysis...[/bold cyan]\n")
     with console.status("  Asking Claude to review your setup..."):
         result = LLMAnalyzer(app_path, detection).analyze(api_key)
 

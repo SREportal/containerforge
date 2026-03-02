@@ -5,11 +5,15 @@ Shows language, framework, confidence, OCI labels, detected ports, etc.
 
 from pathlib import Path
 
+from rich.console import Console
+
 console = Console()
 
 
 def print_detection_report(detection: dict, app_path: Path):
-    from rich.table import Table; from rich.panel import Panel; from rich import box; from rich.text import Text
+    from rich import box
+    from rich.panel import Panel
+    from rich.table import Table
     """Print a full detection report to the terminal."""
 
     lang = detection.get("language_display", detection.get("language", "?"))

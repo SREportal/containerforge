@@ -1,10 +1,10 @@
 """
 ContainerForge — Containerize anything. Ship everywhere.
 
-Version: 2.1.0
+Version: 2.1.1
 License: Apache 2.0
 """
-__version__ = "2.1.0"
+__version__ = "2.1.1"
 __author__ = "ContainerForge Contributors"
 __license__ = "Apache-2.0"
 

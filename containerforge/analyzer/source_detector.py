@@ -13,11 +13,10 @@ Scans a source directory and identifies:
 Used as the first pass before framework-specific analysis.
 """
 
-import re
 import json
+import re
 from pathlib import Path
 from typing import Optional
-
 
 # ─── Language Fingerprints ────────────────────────────────────────────────────
 # Each entry: (language_key, indicator_files, indicator_extensions)
@@ -573,7 +572,7 @@ class SourceDetector:
         elif language == "dotnet":
             return "dotnet publish -c Release -o /app/publish", "dotnet /app/publish/*.dll"
 
-        return "", f"./start.sh"
+        return "", "./start.sh"
 
     # ─── OCI Labels ──────────────────────────────────────────────────────────
 
@@ -622,10 +621,10 @@ class SourceDetector:
         images = {
             "python":  f"python:{version}-slim",
             "nodejs":  f"node:{version}-alpine",
-            "go":      f"gcr.io/distroless/static-debian12",
+            "go":      "gcr.io/distroless/static-debian12",
             "java":    f"eclipse-temurin:{version}-jre-alpine",
             "ruby":    f"ruby:{version}-slim",
-            "rust":    f"gcr.io/distroless/cc-debian12",
+            "rust":    "gcr.io/distroless/cc-debian12",
             "php":     f"php:{version}-fpm-alpine",
             "dotnet":  f"mcr.microsoft.com/dotnet/aspnet:{version}-alpine",
         }
@@ -639,7 +638,7 @@ class SourceDetector:
             "go":      f"golang:{version}-alpine",
             "java":    f"eclipse-temurin:{version}-jdk-alpine",
             "ruby":    f"ruby:{version}",
-            "rust":    f"rust:latest-slim",
+            "rust":    "rust:latest-slim",
             "php":     f"php:{version}-cli",
             "dotnet":  f"mcr.microsoft.com/dotnet/sdk:{version}-alpine",
         }
@@ -675,7 +674,7 @@ class SourceDetector:
         return any((self.app_path / f).exists() for f in [".env", ".env.example", ".env.sample"])
 
     def _detect_env_vars(self, entry_point: Optional[Path]) -> list[str]:
-        """Detect env var names referenced in code."""
+        """Detect env var names referenced in code and .env* files."""
         found = set()
         patterns = [
             r'os\.environ\.get\(["\'](\w+)["\']',
@@ -697,17 +696,37 @@ class SourceDetector:
                         found.add(m.group(1))
             except Exception:
                 pass
+        # Also extract variable names defined in .env* files
+        for env_name in [".env", ".env.example", ".env.sample", ".env.local"]:
+            env_file = self.app_path / env_name
+            if env_file.exists():
+                try:
+                    for line in self._read_file(env_file).splitlines():
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            key = line.split("=", 1)[0].strip()
+                            if key:
+                                found.add(key)
+                except Exception:
+                    pass
         return sorted(found)
 
     def _score_confidence(self, language: str, framework: str, entry_point, deps_info: dict) -> str:
         score = 0
-        if language != "unknown": score += 30
-        if framework != "unknown": score += 25
-        if entry_point: score += 20
-        if deps_info.get("deps_file"): score += 15
-        if deps_info.get("lock_file"): score += 10
-        if score >= 90: return "high"
-        if score >= 60: return "medium"
+        if language != "unknown":
+            score += 30
+        if framework != "unknown":
+            score += 25
+        if entry_point:
+            score += 20
+        if deps_info.get("deps_file"):
+            score += 15
+        if deps_info.get("lock_file"):
+            score += 10
+        if score >= 90:
+            return "high"
+        if score >= 60:
+            return "medium"
         return "low"
 
     def _read_file(self, path: Path) -> str:

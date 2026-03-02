@@ -1,10 +1,10 @@
 [build-system]
 requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "containerforge"
-version = "2.1.0"
+version = "2.1.1"
 description = "Containerize anything. Ship everywhere. OCI-compliant, multi-language, batteries included."
 readme = "README.md"
 license = { text = "Apache-2.0" }

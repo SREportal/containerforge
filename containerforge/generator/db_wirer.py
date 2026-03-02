@@ -7,8 +7,6 @@ network links automatically.
 """
 
 from pathlib import Path
-from typing import Optional
-
 
 # ─── DB service templates ──────────────────────────────────────────────────────
 
@@ -242,7 +240,7 @@ def render_depends_on(db_names: list) -> str:
         spec = DB_SERVICES.get(name)
         if spec and spec["image"] and spec.get("healthcheck"):
             lines.append(f"      {name}:")
-            lines.append(f"        condition: service_healthy")
+            lines.append("        condition: service_healthy")
     return "\n".join(lines)
 
 
@@ -250,31 +248,31 @@ def _render_service(name: str, spec: dict) -> str:
     lines = [f"  # ── {spec['display']} ──────────────────────────────────────"]
     lines.append(f"  {name}:")
     lines.append(f"    image: {spec['image']}")
-    lines.append(f"    restart: unless-stopped")
+    lines.append("    restart: unless-stopped")
 
     if spec["env_vars"]:
-        lines.append(f"    environment:")
+        lines.append("    environment:")
         for k, v in spec["env_vars"].items():
             lines.append(f"      - {k}={v}")
 
     if spec["port"]:
-        lines.append(f"    ports:")
+        lines.append("    ports:")
         lines.append(f"      - \"{spec['port']}:{spec['port']}\"")
 
     if spec["volume"]:
-        lines.append(f"    volumes:")
+        lines.append("    volumes:")
         lines.append(f"      - {spec['volume']}")
 
     if spec["healthcheck"]:
-        lines.append(f"    healthcheck:")
+        lines.append("    healthcheck:")
         lines.append(f"      test: [\"CMD-SHELL\", \"{spec['healthcheck']}\"]")
-        lines.append(f"      interval: 10s")
-        lines.append(f"      timeout: 5s")
-        lines.append(f"      retries: 5")
-        lines.append(f"      start_period: 30s")
+        lines.append("      interval: 10s")
+        lines.append("      timeout: 5s")
+        lines.append("      retries: 5")
+        lines.append("      start_period: 30s")
 
-    lines.append(f"    networks:")
-    lines.append(f"      - forge-net")
+    lines.append("    networks:")
+    lines.append("      - forge-net")
     lines.append("")
 
     return "\n".join(lines)

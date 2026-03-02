@@ -4,10 +4,8 @@ Supports: Flask, FastAPI, Django, plain Python WSGI/ASGI apps.
 """
 
 import re
-import ast
 from pathlib import Path
 from typing import Optional
-
 
 FLASK_PATTERNS = ["flask", "Flask", "from flask"]
 FASTAPI_PATTERNS = ["fastapi", "FastAPI", "from fastapi"]

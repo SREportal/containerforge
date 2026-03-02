@@ -13,11 +13,10 @@ OCI Compliance:
   - OCI media types via BuildKit --platform support
 """
 
-import shlex
 import json
+import shlex
 from pathlib import Path
 from typing import Optional
-
 
 # ─── Language-specific Dockerfile templates ────────────────────────────────────
 
@@ -614,7 +613,7 @@ class OCIDockerfileGenerator:
                     data = json.loads(pkg.read_text())
                     build_script = data.get("scripts", {}).get("build", "")
                     if build_script:
-                        pkg_build = f"RUN npm run build"
+                        pkg_build = "RUN npm run build"
                 except Exception:
                     pass
 

@@ -238,10 +238,10 @@ async def prometheus_metrics():
         (state.total_checks - state.total_failures) / state.total_checks * 100
         if state.total_checks > 0 else 100.0
     )
-    
+
     # App metrics from last telemetry poll
     tel = state.last_telemetry
-    
+
     lines = [
         "# HELP cf_target_up Whether the target container is healthy (1=up, 0=down)",
         "# TYPE cf_target_up gauge",

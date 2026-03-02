@@ -11,11 +11,9 @@ Each provider generates its IaC config AND optionally runs the deploy.
 """
 
 import json
-import subprocess
 import shutil
+import subprocess
 from pathlib import Path
-from typing import Optional
-
 
 PROVIDERS = ["aws", "gcp", "azure", "fly"]
 
@@ -79,7 +77,7 @@ class CloudDeployer:
             "requiresCompatibilities": ["FARGATE"],
             "cpu": "256",
             "memory": "512",
-            "executionRoleArn": f"arn:aws:iam::<AWS_ACCOUNT_ID>:role/ecsTaskExecutionRole",
+            "executionRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/ecsTaskExecutionRole",
             "taskRoleArn": f"arn:aws:iam::<AWS_ACCOUNT_ID>:role/{name}-task-role",
             "containerDefinitions": [
                 {

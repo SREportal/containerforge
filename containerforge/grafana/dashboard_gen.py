@@ -6,7 +6,7 @@ Dashboard panels:
   - Container health status (gauge)
   - Availability % (stat)
   - Request rate (time series)
-  - Error rate % (time series)  
+  - Error rate % (time series)
   - Avg latency ms (time series)
   - Memory usage MB (time series)
   - CPU % (time series)
@@ -17,7 +17,6 @@ Dashboard panels:
 
 import json
 from pathlib import Path
-from datetime import datetime
 
 
 class GrafanaGenerator:
@@ -47,8 +46,6 @@ class GrafanaGenerator:
 
     def _build_dashboard(self) -> dict:
         container = self.name
-        sidecar_port = self.cfg.sidecar_port
-        app_port = self.d.get("port", 8080)
         lang = self.d.get("language_display", self.d.get("language", "app"))
         fw = self.d.get("framework_display", self.d.get("framework", ""))
 
@@ -247,7 +244,7 @@ class GrafanaGenerator:
         return panels
 
     def _provisioning_config(self) -> str:
-        return f"""\
+        return """\
 # Grafana dashboard provisioning config
 # Place this in grafana/provisioning/dashboards/containerforge.yml
 

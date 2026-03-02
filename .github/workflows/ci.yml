@@ -32,8 +32,8 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - run: pip install ruff
-      - run: ruff check .
+      - run: pip install "ruff==0.15.4"
+      - run: ruff check . --no-cache
 
   publish:
     name: Publish to PyPI

@@ -5,8 +5,6 @@ Non-destructive: adds a separate _cf_health.py file and imports it.
 
 import re
 from pathlib import Path
-from typing import Optional
-
 
 FLASK_HEALTH_CODE = '''
 # ── ContainerForge: Health & Telemetry ──────────────────────────────────────
