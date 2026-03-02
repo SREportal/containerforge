@@ -9,7 +9,6 @@ All tests create isolated temp directories and clean up after themselves.
 """
 
 import json
-import os
 import shutil
 import tempfile
 from pathlib import Path
@@ -229,7 +228,7 @@ class TestConfigLoader:
 
     @pytest.fixture(autouse=True)
     def _import(self):
-        from containerforge.config_loader import load_config, generate_example_config, ForgeConfig
+        from containerforge.config_loader import ForgeConfig, generate_example_config, load_config
         self.load_config = load_config
         self.generate_example_config = generate_example_config
         self.ForgeConfig = ForgeConfig
@@ -319,8 +318,8 @@ class TestOCIDockerfileGenerator:
 
     @pytest.fixture(autouse=True)
     def _import(self):
-        from containerforge.generator.oci_dockerfile_gen import OCIDockerfileGenerator
         from containerforge.analyzer.source_detector import SourceDetector
+        from containerforge.generator.oci_dockerfile_gen import OCIDockerfileGenerator
         self.Generator = OCIDockerfileGenerator
         self.Detector = SourceDetector
 
@@ -416,8 +415,12 @@ class TestDatabaseWirer:
     @pytest.fixture(autouse=True)
     def _import(self):
         from containerforge.generator.db_wirer import (
-            detect_databases, render_db_services, render_app_env_additions,
-            render_depends_on, render_db_volumes, DB_SERVICES
+            DB_SERVICES,
+            detect_databases,
+            render_app_env_additions,
+            render_db_services,
+            render_db_volumes,
+            render_depends_on,
         )
         self.detect_databases = detect_databases
         self.render_db_services = render_db_services
@@ -562,8 +565,8 @@ class TestK8sGenerator:
 
     @pytest.fixture(autouse=True)
     def _import(self):
-        from containerforge.k8s.k8s_gen import K8sGenerator
         from containerforge.config_loader import ForgeConfig
+        from containerforge.k8s.k8s_gen import K8sGenerator
         self.Generator = K8sGenerator
         self.ForgeConfig = ForgeConfig
 
@@ -837,8 +840,8 @@ class TestGrafanaGenerator:
 
     @pytest.fixture(autouse=True)
     def _import(self):
-        from containerforge.grafana.dashboard_gen import GrafanaGenerator
         from containerforge.config_loader import ForgeConfig
+        from containerforge.grafana.dashboard_gen import GrafanaGenerator
         self.Generator = GrafanaGenerator
         self.ForgeConfig = ForgeConfig
 
@@ -906,14 +909,14 @@ class TestIntegration:
     def test_flask_full_pipeline(self):
         """Flask app: detect + dockerfile + compose + k8s + cicd + cloud + grafana"""
         from containerforge.analyzer.source_detector import SourceDetector
-        from containerforge.generator.oci_dockerfile_gen import OCIDockerfileGenerator
-        from containerforge.generator.compose_gen import ComposeGenerator
-        from containerforge.generator.db_wirer import detect_databases
-        from containerforge.k8s.k8s_gen import K8sGenerator
         from containerforge.cicd.pipeline_gen import CICDGenerator
-        from containerforge.grafana.dashboard_gen import GrafanaGenerator
         from containerforge.cloud.cloud_deployer import CloudDeployer
         from containerforge.config_loader import ForgeConfig
+        from containerforge.generator.compose_gen import ComposeGenerator
+        from containerforge.generator.db_wirer import detect_databases
+        from containerforge.generator.oci_dockerfile_gen import OCIDockerfileGenerator
+        from containerforge.grafana.dashboard_gen import GrafanaGenerator
+        from containerforge.k8s.k8s_gen import K8sGenerator
 
         d = app_dir({
             "requirements.txt": "flask\npsycopg2-binary\nredis\ngunicorn\n",
@@ -967,9 +970,9 @@ class TestIntegration:
     def test_nodejs_full_pipeline(self):
         """Express app: full generate pipeline"""
         from containerforge.analyzer.source_detector import SourceDetector
+        from containerforge.config_loader import ForgeConfig
         from containerforge.generator.oci_dockerfile_gen import OCIDockerfileGenerator
         from containerforge.k8s.k8s_gen import K8sGenerator
-        from containerforge.config_loader import ForgeConfig
 
         d = app_dir({
             "package.json": json.dumps({
